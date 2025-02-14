@@ -99,5 +99,5 @@ llama-model: llama/models/Phi-3-mini-4k-instruct-q4.gguf
 
 llama/models/Phi-3-mini-4k-instruct-q4.gguf:
 	mkdir -p llama/models
-	wget -s https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/blob/main/Phi-3-mini-4k-instruct-q4.gguf \
+	wget -S https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/blob/main/Phi-3-mini-4k-instruct-q4.gguf \
 	 -O llama/models/Phi-3-mini-4k-instruct-q4.gguf
