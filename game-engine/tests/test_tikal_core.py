@@ -1,7 +1,12 @@
+import jsonpickle
+import pprint
 import pytest
 import core_engine.tikal_core as tkl_core
 import core_engine.const as const
 from core_engine.aux import print_gameboard
+from copy import deepcopy
+
+pp = pprint.PrettyPrinter(indent=4)
 
 TYPE = const.TYPE
 WORD = const.WORD
@@ -259,4 +264,20 @@ def test_batch_match(match_log):
     gameboard_output = game_executor.execute_game(match_log[WORD_LIST])
     print_gameboard(gameboard_output.tiles) 
 
-    
+    gameboard_copy = deepcopy(gameboard_output)
+    del gameboard_copy.words_on_board
+    del gameboard_copy.word_tile_coords_set
+
+    json_gameboard_copy = jsonpickle.encode(gameboard_copy, indent=4)
+    json_gameboard = jsonpickle.encode(gameboard_output, indent=4)
+
+    print(json_gameboard_copy)
+    print(type(json_gameboard_copy))
+
+    print(json_gameboard)
+    print(type(json_gameboard))
+    gameboard_deserialized = jsonpickle.decode(json_gameboard)
+    gameboard_copy_deserialized = jsonpickle.decode(json_gameboard_copy)
+
+    print(gameboard_deserialized)
+    print(gameboard_copy_deserialized)
