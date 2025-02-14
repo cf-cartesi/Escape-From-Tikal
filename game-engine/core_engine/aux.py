@@ -13,6 +13,38 @@ TREASURE_EMOJI = const.TREASURE_EMOJI
 NOTHING_EMOJI = const.NOTHING_EMOJI
 EMPTY_EMOJI = const.EMPTY_EMOJI
 
+MOCKED_LLM_RESPONSE_DICT = {
+    "Sandwich": 2,
+    "Ham": 5,
+    "Breakfast": 5,
+    "Bacon": 4,
+    "Sea": 3,
+    "Sand": 5,
+    "Silicon": 3,
+    "Carbon": 3,
+    "Graphite": 1,
+    "Grey": 5,
+    "Graphene": 6,
+    "Pencil": 10,
+    "Tangerine": 11 
+}
+
+MOCKED_WORD_MOVES = {
+    "Sandwich": (1, 5),
+    "Ham": (1,6),
+    "Breakfast": (2,6),
+    "Bacon": (1,7),
+    "Sea": (2,3),
+    "Sand": (3,2),
+    "Silicon": (4,2),
+    "Carbon": (5,2),
+    "Graphite": (6,2),
+    "Grey": (5,3),
+    "Graphene": (6,1),
+    "Pencil": (6,3),
+    "Tangerine": (3,6)
+}
+
 #Prints tiles map on terminal
 def print_gameboard(gameboard):
     #print(gameboard)
@@ -74,6 +106,26 @@ def print_gameboard(gameboard):
     print("Word index:\n" + word_index_str)
     return (map_str)
 
+#Print the statistics of the gameboard
+def print_gameboard_stats(gameboard):
+
+    status_str = "\nCurrent board conditions:\n\n"
+    status_str += f"Current {WATER_EMOJI}: {gameboard.water_supply}\n"
+    status_str += f"Max {WATER_EMOJI}: {gameboard.max_water_supply}\n"
+    status_str += f"Current {CURSE_EMOJI}: {gameboard.curse_count}\n"
+    status_str += f"Current {AMULET_EMOJI}: {gameboard.amulet_count}\n"
+    status_str += f"Max {AMULET_EMOJI}: {gameboard.max_amulet_count}\n"
+    status_str += f"Current {TREASURE_EMOJI}: {gameboard.treasure_count}\n"
+    status_str += f"Move count: {gameboard.move_count}\n"
+    status_str += f"Last move type: {gameboard.last_visited_tile_type}\n"
+    status_str += f"Last move tile: {gameboard.last_visited_tile}\n"
+    status_str += f"Game status: {gameboard.game_status}\n"
+
+    if gameboard.game_status == const.DEFEAT:
+        status_str += f"Defeat reason: {gameboard.defeat_reason}"
+
+    print(status_str + "\n")
+
 #Checks if provided tile coordinates are within the map boundaries
 def check_valid_tile_coord(tile_coord):
     line, column = tile_coord
@@ -87,3 +139,55 @@ def check_valid_tile_coord(tile_coord):
 def check_word_similarity(new_word, previous_words):
     #TODO: check if new word is too similar to previous words, thus violating the rules of the game
     return False
+
+#Returns the word group index closest to the given word
+def query_ai_for_closest_word_group(word, word_groups_tile_mapping):
+
+    groups_list_str = ""
+    #Creating a list with the word groups
+    for key in word_groups_tile_mapping.keys():
+        groups_list_str += f"\n{word_groups_tile_mapping[key][const.INDEX]} - {key}"
+    print(groups_list_str)
+
+    #Formatting prompt for the LLM
+    llm_prompt = confs.LLM_PROMPT_TEMPLATE_TEXT.format(given_word=word, word_sets=groups_list_str)
+    print(llm_prompt)
+
+    #Calling the LLM
+    llm_response_str = query_llm(llm_prompt)
+
+    #Splitting the selection and the reasoning
+    chosen_group_index = llm_response_str.split(sep=".", maxsplit=1)[0]
+    reasoning = llm_response_str.split(sep=".", maxsplit=1)[1]
+
+    try:
+        #Convert to int
+        chosen_group_index = int(chosen_group_index)
+    except Exception as e:
+        raise RuntimeError(f"Couldn't extract index from LLM response\nPrompt:\n{llm_prompt}\nResponse:\n{llm_response_str}")
+
+    print(f"Chosen group was number {chosen_group_index}.\nReasoning:\n{reasoning}")
+    return {const.INDEX: chosen_group_index, const.REASONING: reasoning}
+
+def query_llm(llm_prompt):
+
+    llm_response = ""
+
+    if confs.LLM_TO_USE == const.MOCKED:
+        llm_response = mocked_llm(llm_prompt)
+
+    return llm_response
+
+def mocked_llm(llm_prompt):
+
+    word = llm_prompt.split("The word is ")[1].split(" and the word sets")[0]
+    word_sets = llm_prompt.split("and the word sets are:")[1]
+    print(f"Mocked llm given word is {word}")
+    print(f"Provided word sets are:\n{word_sets}")
+
+    index = 1
+    if word in MOCKED_LLM_RESPONSE_DICT.keys(): 
+        index = MOCKED_LLM_RESPONSE_DICT[word]
+
+    llm_response = f"{index}. I like turtles"
+    return llm_response

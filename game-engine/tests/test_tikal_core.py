@@ -249,6 +249,9 @@ def test_batch_match(match_log):
     gameboard.load_initial_words(match_log[SETUP_WORDS])
     print_gameboard(gameboard.tiles)
 
+    #Load map parameters
+    gameboard.load_parameter_based_on_map(gamemap)
+
     #Create game executor and load map and board
     game_executor = tkl_core.GameExecutor(gameboard, gamemap)
 

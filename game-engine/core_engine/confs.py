@@ -37,3 +37,18 @@ MAP_BOUNDARIES = {
         const.END: 4
     }
 }
+
+LLM_PROMPT_TEMPLATE_TEXT = """
+I am going to provide you with a numbered list of word sets and with an 
+isolated word and I need you to tell me the number of the word set that 
+is more related to the given isolated word.
+Only consider the meaning of the word. Do not accept multiple words, 
+ignore radicals and suffix correlations, words that are not present 
+on the english dictionary, in these cases answer 0.
+Begin your answer with the isolated number followed by a period.
+After the period you can add your reasoning for choosing that option.
+The word is {given_word} and the word sets are:
+{word_sets}
+"""
+
+LLM_TO_USE = const.MOCKED

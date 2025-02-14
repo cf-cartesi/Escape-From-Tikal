@@ -6,6 +6,10 @@ TYPE = "type"
 MAP = "map"
 WORD_LIST = "word_list"
 SETUP_WORDS = "setup_words"
+TILES = "tiles"
+INDEX = "index"
+REASONING = "reasoning"
+MOCKED = "mocked"
 
 #Map tile types
 CURSE = "curse"
