@@ -1,5 +1,8 @@
 import core_engine.const as const
 
+TYPE = const.TYPE
+WORD = const.WORD
+
 #Game configurations
 INITIAL_WATER_SUPPLY = 7
 INITIAL_CURSES_COUNT = 0
@@ -51,4 +54,149 @@ The word is {given_word} and the word sets are:
 {word_sets}
 """
 
-LLM_TO_USE = const.MOCKED
+GENESIS_WORDS = [
+    "Bread",
+    "Fish",
+    "Salt",
+    "Bacon",
+    "TV",
+    "Puppet"
+]
+
+
+MAP_1_INITIAL_WORD_POSITIONS = [
+    (1, 4),
+    (2, 4),
+    (2, 5)
+] 
+
+MAP_1 = {
+    1: {
+        4: {
+            TYPE: WORD,
+            WORD: "Bread" 
+        },
+        5: {
+            TYPE: const.EMPTY
+        },
+        6: {
+            TYPE: const.TREASURE
+        },
+        7: {
+            TYPE: const.TRAP
+        }
+    },
+    2: {
+        3: {
+            TYPE: const.EMPTY
+        },
+        4: {
+            TYPE: WORD,
+            WORD: "Fish" 
+        },
+        5: {
+            TYPE: WORD,
+            WORD: "Bread" 
+        },
+        6: {
+            TYPE: const.EMPTY
+        },
+        7: {
+            TYPE: const.EMPTY
+        }
+    },
+    3: {
+        2: {
+            TYPE: const.WATER
+        },
+        3: {
+            TYPE: const.TRAP
+        },
+        4: {
+            TYPE: const.EMPTY
+        },
+        5: {
+            TYPE: const.EMPTY
+        },
+        6: {
+            TYPE: const.EXIT
+        },
+        7: {
+            TYPE: const.EMPTY
+        }
+    },
+    4: {
+        1:{
+            TYPE: const.EMPTY
+        },
+        2: {
+            TYPE: const.EMPTY
+        },
+        3: {
+            TYPE: const.EMPTY
+        },
+        4: {
+            TYPE: const.CURSE
+        },
+        5: {
+            TYPE: const.TRAP
+        },
+        6: {
+            TYPE: const.TREASURE
+        },
+        7: {
+            TYPE: const.EMPTY
+        }
+    },
+    5: {
+        1:{
+            TYPE: const.EMPTY
+        },
+        2: {
+            TYPE: const.CURSE
+        },
+        3: {
+            TYPE: const.TRAP
+        },
+        4: {
+            TYPE: const.EMPTY
+        },
+        5: {
+            TYPE: const.EMPTY
+        },
+        6: {
+            TYPE: const.EMPTY
+        }
+    },
+    6: {
+        1:{
+            TYPE: const.TREASURE
+        },
+        2: {
+            TYPE: const.WATER
+        },
+        3: {
+            TYPE: const.AMULET
+        },
+        4: {
+            TYPE: const.CURSE
+        },
+        5: {
+            TYPE: const.EMPTY
+        }        
+    },
+    7: {
+        1:{
+            TYPE: const.WATER
+        },
+        2: {
+            TYPE: const.EMPTY
+        },
+        3: {
+            TYPE: const.EMPTY
+        },
+        4: {
+            TYPE: const.EMPTY
+        }
+    }
+}

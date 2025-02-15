@@ -13,6 +13,16 @@ TREASURE_EMOJI = const.TREASURE_EMOJI
 NOTHING_EMOJI = const.NOTHING_EMOJI
 EMPTY_EMOJI = const.EMPTY_EMOJI
 
+MOCKED_MAP_SETUP_WORDS = { 
+    1: {
+        4: "Salt"
+    },
+    2: {
+        4: "Fish",
+        5: "Bread"
+    }
+}
+
 MOCKED_LLM_RESPONSE_DICT = {
     "Sandwich": 2,
     "Ham": 5,
@@ -119,7 +129,9 @@ def print_gameboard_stats(gameboard):
     status_str += f"Move count: {gameboard.move_count}\n"
     status_str += f"Last move type: {gameboard.last_visited_tile_type}\n"
     status_str += f"Last move tile: {gameboard.last_visited_tile}\n"
+    status_str += f"Last move reasoning: {gameboard.last_move_reasoning}\n"
     status_str += f"Game status: {gameboard.game_status}\n"
+    status_str += f"Score: {gameboard.score}\n"
 
     if gameboard.game_status == const.DEFEAT:
         status_str += f"Defeat reason: {gameboard.defeat_reason}"
@@ -134,6 +146,26 @@ def check_valid_tile_coord(tile_coord):
         if ((column >= confs.MAP_BOUNDARIES[line][const.BEGINNING]) and (column <= confs.MAP_BOUNDARIES[line][const.END])):
             return True
     return False
+
+
+def calculate_score(game_board):
+    # score = victory*1000 + treasures*500 - trap*100 - curse*300 + amulets*300 - moves*30
+    score = 0
+
+    if (game_board.game_status == const.VICTORY):
+        score += 1000
+    score += 500 * game_board.treasure_count
+
+    traps = confs.INITIAL_WATER_SUPPLY - game_board.max_water_supply
+    score -= 100 * traps
+
+    score -= 300 * game_board.curse_count
+
+    score += 300 * game_board.amulet_count
+    
+    score -= 30 * game_board.move_count
+
+    return score
 
 #Checks if the new provided word violates the previous words similarity rule
 def check_word_similarity(new_word, previous_words):
@@ -171,10 +203,8 @@ def query_ai_for_closest_word_group(word, word_groups_tile_mapping):
 
 def query_llm(llm_prompt):
 
-    llm_response = ""
-
-    if confs.LLM_TO_USE == const.MOCKED:
-        llm_response = mocked_llm(llm_prompt)
+    #The handler is initialized with the mocked one but might be changed to a new one
+    llm_response = llm_handler(llm_prompt)
 
     return llm_response
 
@@ -191,3 +221,7 @@ def mocked_llm(llm_prompt):
 
     llm_response = f"{index}. I like turtles"
     return llm_response
+
+#Initializing the llm handler with the mocked one
+llm_handler = mocked_llm
+llm_in_use = const.MOCKED

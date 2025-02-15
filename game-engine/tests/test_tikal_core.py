@@ -3,7 +3,8 @@ import pprint
 import pytest
 import core_engine.tikal_core as tkl_core
 import core_engine.const as const
-from core_engine.aux import print_gameboard
+import core_engine.confs as confs
+from core_engine.aux import print_gameboard, print_gameboard_stats
 from copy import deepcopy
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -23,138 +24,6 @@ EXIT_EMOJI = "\N{DOOR}"
 TREASURE_EMOJI = "\N{COIN}"
 NOTHING_EMOJI = "\N{MEDIUM BLACK CIRCLE}"
 EMPTY_EMOJI = "\N{MEDIUM WHITE CIRCLE}"
-
-
-TEST_MAP_1 = {
-    1: {
-        4: {
-            TYPE: WORD,
-            WORD: ".S" 
-        },
-        5: {
-            TYPE: const.EMPTY
-        },
-        6: {
-            TYPE: const.TREASURE
-        },
-        7: {
-            TYPE: const.TRAP
-        }
-    },
-    2: {
-        3: {
-            TYPE: const.EMPTY
-        },
-        4: {
-            TYPE: WORD,
-            WORD: ".F" 
-        },
-        5: {
-            TYPE: WORD,
-            WORD: ".B" 
-        },
-        6: {
-            TYPE: const.EMPTY
-        },
-        7: {
-            TYPE: const.EMPTY
-        }
-    },
-    3: {
-        2: {
-            TYPE: const.WATER
-        },
-        3: {
-            TYPE: const.TRAP
-        },
-        4: {
-            TYPE: const.EMPTY
-        },
-        5: {
-            TYPE: const.EMPTY
-        },
-        6: {
-            TYPE: const.EXIT
-        },
-        7: {
-            TYPE: const.EMPTY
-        }
-    },
-    4: {
-        1:{
-            TYPE: const.EMPTY
-        },
-        2: {
-            TYPE: const.EMPTY
-        },
-        3: {
-            TYPE: const.EMPTY
-        },
-        4: {
-            TYPE: const.CURSE
-        },
-        5: {
-            TYPE: const.TRAP
-        },
-        6: {
-            TYPE: const.TREASURE
-        },
-        7: {
-            TYPE: const.EMPTY
-        }
-    },
-    5: {
-        1:{
-            TYPE: const.EMPTY
-        },
-        2: {
-            TYPE: const.CURSE
-        },
-        3: {
-            TYPE: const.TRAP
-        },
-        4: {
-            TYPE: const.EMPTY
-        },
-        5: {
-            TYPE: const.EMPTY
-        },
-        6: {
-            TYPE: const.EMPTY
-        }
-    },
-    6: {
-        1:{
-            TYPE: const.TREASURE
-        },
-        2: {
-            TYPE: const.WATER
-        },
-        3: {
-            TYPE: const.AMULET
-        },
-        4: {
-            TYPE: const.CURSE
-        },
-        5: {
-            TYPE: const.EMPTY
-        }        
-    },
-    7: {
-        1:{
-            TYPE: const.WATER
-        },
-        2: {
-            TYPE: const.EMPTY
-        },
-        3: {
-            TYPE: const.EMPTY
-        },
-        4: {
-            TYPE: const.EMPTY
-        }
-    }
-}
 
 SETUP_WORDS_MAP_1 = { 
     1: {
@@ -182,12 +51,6 @@ TEST_WORD_LIST_1 = [
     "Tangerine"
 ]
 
-MATCH_LOG_1 = {
-    MAP : TEST_MAP_1,
-    SETUP_WORDS : SETUP_WORDS_MAP_1,
-    WORD_LIST : TEST_WORD_LIST_1
-}
-
 EMPTY_MAP_TEXT = """
 ⚫⚫⚫⚫⚫⚫⚪⚫⚫⚫⚫⚫⚫
 ⚫⚫⚫⚫⚪⚫⚫⚫⚪⚫⚫⚫⚫
@@ -205,10 +68,10 @@ EMPTY_MAP_TEXT = """
 """
 
 TEST_MAP_1_TEXT = """
-⚫⚫⚫⚫⚫⚫.S⚫⚫⚫⚫⚫⚫
+⚫⚫⚫⚫⚫⚫.0⚫⚫⚫⚫⚫⚫
 ⚫⚫⚫⚫⚪⚫⚫⚫⚪⚫⚫⚫⚫
-⚫⚫💧⚫⚫⚫.F⚫⚫⚫🪙⚫⚫
-⚪⚫⚫⚫🪤⚫⚫⚫.B⚫⚫⚫🪤
+⚫⚫💧⚫⚫⚫.1⚫⚫⚫🪙⚫⚫
+⚪⚫⚫⚫🪤⚫⚫⚫.2⚫⚫⚫🪤
 ⚫⚫⚪⚫⚫⚫⚪⚫⚫⚫⚪⚫⚫
 ⚪⚫⚫⚫⚪⚫⚫⚫⚪⚫⚫⚫⚪
 ⚫⚫💀⚫⚫⚫💀⚫⚫⚫🚪⚫⚫
@@ -222,11 +85,16 @@ TEST_MAP_1_TEXT = """
 
 @pytest.fixture
 def test_map():
-    return TEST_MAP_1
+    return confs.MAP_1
 
 @pytest.fixture
-def match_log():
-    return MATCH_LOG_1
+def test_game_state():
+    game_map = tkl_core.GameMap()
+    game_board = tkl_core.GameBoard()
+    game_board.load_initial_words(SETUP_WORDS_MAP_1)
+    game_board.load_parameter_based_on_map(game_map)
+    game_state = tkl_core.GameState(game_map=game_map, game_board=game_board, words=TEST_WORD_LIST_1, new_game=False)
+    return game_state
 
 def test_create_gameboard(test_map):
 
@@ -241,43 +109,92 @@ def test_create_gameboard(test_map):
 
     assert(output_gameboard.strip() == TEST_MAP_1_TEXT.strip())
 
-def test_batch_match(match_log):
+def test_batch_match(test_game_state):
 
-    #Create gamemap
-    gamemap = tkl_core.GameMap(match_log[MAP])
-    print_gameboard(gamemap.tiles)
-
-    #Create gameboard
-    gameboard = tkl_core.GameBoard()
-
-    #Load initial word tiles
-    gameboard.load_initial_words(match_log[SETUP_WORDS])
-    print_gameboard(gameboard.tiles)
-
-    #Load map parameters
-    gameboard.load_parameter_based_on_map(gamemap)
+    #Printing initial state
+    print("\n\nStarting batch match test\n\nMap:\n")
+    print_gameboard(test_game_state.game_map.tiles)
+    print("\nBoard:\n")
+    print_gameboard(test_game_state.game_board.tiles)
+    print_gameboard_stats(test_game_state.game_board)
+    print("\n\nSerialized game state:\n\n")
+    game_state_copy = deepcopy(test_game_state)
+    del game_state_copy.game_board.words_on_board
+    del game_state_copy.game_board.word_tile_coords_set
+    json_game_state_copy = jsonpickle.encode(game_state_copy, indent=4)
+    print(json_game_state_copy)
+    print("\n\nExecuting game\n\n")
 
     #Create game executor and load map and board
-    game_executor = tkl_core.GameExecutor(gameboard, gamemap)
+    game_executor = tkl_core.GameExecutor(test_game_state.game_board, test_game_state.game_map)
 
     #Execute game
-    gameboard_output = game_executor.execute_game(match_log[WORD_LIST])
-    print_gameboard(gameboard_output.tiles) 
+    gameboard_output = game_executor.execute_game(test_game_state.words)
 
-    gameboard_copy = deepcopy(gameboard_output)
-    del gameboard_copy.words_on_board
-    del gameboard_copy.word_tile_coords_set
+    #Building output game state
+    output_game_state = deepcopy(test_game_state)
+    output_game_state.game_board = deepcopy(gameboard_output)
+    del output_game_state.game_board.words_on_board
+    del output_game_state.game_board.word_tile_coords_set
 
-    json_gameboard_copy = jsonpickle.encode(gameboard_copy, indent=4)
-    json_gameboard = jsonpickle.encode(gameboard_output, indent=4)
+    #Serializing
+    json_output_game_state = jsonpickle.encode(output_game_state, indent=4)
+    print("\n\nFinal game state JSON\n\n")
+    print(json_output_game_state)
+    print("\n\nFinal game board\n\n")
+    print_gameboard(gameboard_output.tiles)
+    print_gameboard_stats(gameboard_output)
 
-    print(json_gameboard_copy)
-    print(type(json_gameboard_copy))
+def test_execution_multiple_steps(test_game_state):
+    #Load initial state
+    current_state = test_game_state
 
-    print(json_gameboard)
-    print(type(json_gameboard))
-    gameboard_deserialized = jsonpickle.decode(json_gameboard)
-    gameboard_copy_deserialized = jsonpickle.decode(json_gameboard_copy)
+    #Storing words copy for splitting execution
+    all_words = deepcopy(current_state.words)
+    next_word = all_words.pop(0)
+    current_state.words = []
+    current_state.words.append(next_word)
 
-    print(gameboard_deserialized)
-    print(gameboard_copy_deserialized)
+    #Remove indexes
+    del current_state.game_board.words_on_board
+    del current_state.game_board.word_tile_coords_set
+
+    #Serialize and then deserealize and load 
+    serialized_current_state = jsonpickle.encode(current_state, indent=4)
+    print("\n\nInitial state JSON\n\n")
+    print(serialized_current_state)
+
+    iterations = len(all_words) + 1
+    for i in range(0, iterations):
+        deserialized_state = jsonpickle.decode(serialized_current_state)
+        current_state = tkl_core.GameState(game_map=deserialized_state.game_map, 
+            game_board=deserialized_state.game_board, words=deserialized_state.words,
+            game_id=deserialized_state.game_id, new_game=False)
+
+        #Create game executor and load map and board
+        game_executor = tkl_core.GameExecutor(deserialized_state.game_board, deserialized_state.game_map)
+
+        #Execute game
+        gameboard_output = game_executor.execute_game(deserialized_state.words)
+    
+        #Remove indexes
+        del gameboard_output.words_on_board
+        del gameboard_output.word_tile_coords_set
+        
+        current_state.game_board = gameboard_output
+
+        serialized_output_state = jsonpickle.encode(current_state, indent=4)
+        print("\n\nOutput state JSON\n\n")
+        print(serialized_output_state)
+
+        #Prepare next state
+        if (len(all_words) > 0):
+            next_word = all_words.pop(0)
+            current_state.words = []
+            current_state.words.append(next_word)
+            serialized_current_state = jsonpickle.encode(current_state, indent=4)
+            print("\n\nNext state JSON\n\n")
+            print(serialized_current_state)
+        else:
+            break
+
