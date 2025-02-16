@@ -47,7 +47,7 @@ make ensure-publish
 Now the Co-processor is aware of your image and it's time to deploy the
 contract that issues tasks and receives callbacks from it. Use the command
 ```
-make deploy-contracts
+make deploy-contract
 ```
 
 This step will output the contract address. Now let's interact with the
