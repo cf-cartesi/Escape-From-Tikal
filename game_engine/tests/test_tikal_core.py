@@ -172,10 +172,10 @@ def test_execution_multiple_steps(test_game_state):
             game_id=deserialized_state.game_id, new_game=False)
 
         #Create game executor and load map and board
-        game_executor = tkl_core.GameExecutor(deserialized_state.game_board, deserialized_state.game_map)
+        game_executor = tkl_core.GameExecutor(current_state.game_board, current_state.game_map)
 
         #Execute game
-        gameboard_output = game_executor.execute_game(deserialized_state.words)
+        gameboard_output = game_executor.execute_game(current_state.words)
     
         #Remove indexes
         del gameboard_output.words_on_board

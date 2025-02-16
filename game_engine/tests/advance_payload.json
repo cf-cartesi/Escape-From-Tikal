@@ -1,0 +1,289 @@
+{
+  "game_board": {
+    "amulet_count": 0,
+    "curse_count": 0,
+    "defeat_reason": "empty",
+    "game_status": "ongoing",
+    "last_move_reasoning": "",
+    "last_visited_tile": {
+      "py/tuple": [
+        0,
+        0
+      ]
+    },
+    "last_visited_tile_type": "empty",
+    "max_amulet_count": 1,
+    "max_water_supply": 7,
+    "move_count": 0,
+    "py/object": "core_engine.tikal_core.GameBoard",
+    "score": 0,
+    "tiles": {
+      "1": {
+        "4": {
+          "type": "word",
+          "word": "Bread"
+        },
+        "5": {
+          "type": "empty"
+        },
+        "6": {
+          "type": "empty"
+        },
+        "7": {
+          "type": "empty"
+        }
+      },
+      "2": {
+        "3": {
+          "type": "empty"
+        },
+        "4": {
+          "type": "word",
+          "word": "TV"
+        },
+        "5": {
+          "type": "word",
+          "word": "Fish"
+        },
+        "6": {
+          "type": "empty"
+        },
+        "7": {
+          "type": "empty"
+        }
+      },
+      "3": {
+        "2": {
+          "type": "empty"
+        },
+        "3": {
+          "type": "empty"
+        },
+        "4": {
+          "type": "empty"
+        },
+        "5": {
+          "type": "empty"
+        },
+        "6": {
+          "type": "empty"
+        },
+        "7": {
+          "type": "empty"
+        }
+      },
+      "4": {
+        "1": {
+          "type": "empty"
+        },
+        "2": {
+          "type": "empty"
+        },
+        "3": {
+          "type": "empty"
+        },
+        "4": {
+          "type": "empty"
+        },
+        "5": {
+          "type": "empty"
+        },
+        "6": {
+          "type": "empty"
+        },
+        "7": {
+          "type": "empty"
+        }
+      },
+      "5": {
+        "1": {
+          "type": "empty"
+        },
+        "2": {
+          "type": "empty"
+        },
+        "3": {
+          "type": "empty"
+        },
+        "4": {
+          "type": "empty"
+        },
+        "5": {
+          "type": "empty"
+        },
+        "6": {
+          "type": "empty"
+        }
+      },
+      "6": {
+        "1": {
+          "type": "empty"
+        },
+        "2": {
+          "type": "empty"
+        },
+        "3": {
+          "type": "empty"
+        },
+        "4": {
+          "type": "empty"
+        },
+        "5": {
+          "type": "empty"
+        }
+      },
+      "7": {
+        "1": {
+          "type": "empty"
+        },
+        "2": {
+          "type": "empty"
+        },
+        "3": {
+          "type": "empty"
+        },
+        "4": {
+          "type": "empty"
+        }
+      }
+    },
+    "treasure_count": 0,
+    "water_supply": 7
+  },
+  "game_id": 1,
+  "game_map": {
+    "py/object": "core_engine.tikal_core.GameMap",
+    "tiles": {
+      "1": {
+        "4": {
+          "type": "word",
+          "word": "Bread"
+        },
+        "5": {
+          "type": "empty"
+        },
+        "6": {
+          "type": "treasure"
+        },
+        "7": {
+          "type": "trap"
+        }
+      },
+      "2": {
+        "3": {
+          "type": "empty"
+        },
+        "4": {
+          "type": "word",
+          "word": "TV"
+        },
+        "5": {
+          "type": "word",
+          "word": "Fish"
+        },
+        "6": {
+          "type": "empty"
+        },
+        "7": {
+          "type": "empty"
+        }
+      },
+      "3": {
+        "2": {
+          "type": "water"
+        },
+        "3": {
+          "type": "trap"
+        },
+        "4": {
+          "type": "empty"
+        },
+        "5": {
+          "type": "empty"
+        },
+        "6": {
+          "type": "exit"
+        },
+        "7": {
+          "type": "empty"
+        }
+      },
+      "4": {
+        "1": {
+          "type": "empty"
+        },
+        "2": {
+          "type": "empty"
+        },
+        "3": {
+          "type": "empty"
+        },
+        "4": {
+          "type": "curse"
+        },
+        "5": {
+          "type": "trap"
+        },
+        "6": {
+          "type": "treasure"
+        },
+        "7": {
+          "type": "empty"
+        }
+      },
+      "5": {
+        "1": {
+          "type": "empty"
+        },
+        "2": {
+          "type": "curse"
+        },
+        "3": {
+          "type": "trap"
+        },
+        "4": {
+          "type": "empty"
+        },
+        "5": {
+          "type": "empty"
+        },
+        "6": {
+          "type": "empty"
+        }
+      },
+      "6": {
+        "1": {
+          "type": "treasure"
+        },
+        "2": {
+          "type": "water"
+        },
+        "3": {
+          "type": "amulet"
+        },
+        "4": {
+          "type": "curse"
+        },
+        "5": {
+          "type": "empty"
+        }
+      },
+      "7": {
+        "1": {
+          "type": "water"
+        },
+        "2": {
+          "type": "empty"
+        },
+        "3": {
+          "type": "empty"
+        },
+        "4": {
+          "type": "empty"
+        }
+      }
+    }
+  },
+  "py/object": "core_engine.tikal_core.GameState",
+  "words": ["Sandwich"]
+}

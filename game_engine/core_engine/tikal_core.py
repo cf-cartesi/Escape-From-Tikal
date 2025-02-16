@@ -95,6 +95,18 @@ class GameBoard:
                 if tile_type == const.AMULET:
                     self.max_amulet_count += 1
 
+    def setup_initial_words_based_on_map(self, game_map):
+
+        for line in game_map.tiles.keys():
+            for column in game_map.tiles[line].keys():
+                tile_type = game_map.tiles[line][column][const.TYPE]
+                #Increase the total number of amulets available on map
+                if tile_type == const.WORD:
+                    word = game_map.tiles[line][column][const.WORD]
+                    self.tiles[line][column] = {const.TYPE: const.WORD, const.WORD: word}
+                    self.words_on_board[word] = (line, column)
+                    self.word_tile_coords_set.add((line, column))
+
     def rebuild_indexing_data_structures(self):
         #Creating new indexing data structures
         self.words_on_board = {}
@@ -117,9 +129,15 @@ class GameState:
         if new_game:
             #New game
             self.game_board = GameBoard()
-            self.game_map = GameMap(game_id)
+            self.game_map = GameMap(game_id=game_id)
+            aux.print_gameboard(self.game_map.tiles)
             self.words = []
             self.game_id = game_id
+
+            self.game_board.load_parameter_based_on_map(self.game_map)
+            self.game_board.setup_initial_words_based_on_map(self.game_map)
+            aux.print_gameboard_stats(self.game_board)
+
         else:
             #Constructor to load an ongoing game
             self.game_board = game_board
