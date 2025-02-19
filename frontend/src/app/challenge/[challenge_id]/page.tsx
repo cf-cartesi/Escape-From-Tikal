@@ -18,6 +18,7 @@ export default function ChallengePage({ params }: { params: Promise<{ challenge_
   const [gameSubmitted, setGameSubmitted] = useState<boolean>(false);
   const [transacting, setTransacting] = useState<boolean>(false);
   const [gameData, setGameData] = useState<GameData>();
+  const [inputLabel, setInputLabel] = useState<string>("New word");
 
 
   const useParams = use(params);
@@ -48,20 +49,51 @@ export default function ChallengePage({ params }: { params: Promise<{ challenge_
 
     setTransacting(true);
 
-    gameData.words = [selectedWord];
+    gameData.words = selectedWord.split(',').map((w) => w.replace(/^\s+|\s+$/g, '').toLowerCase());
     const newGameData = await advanceGame(gameData);
-    const reason = newGameData?.game_board?.last_move_reasoning || "";
-    localWordHistory.splice(0,0,selectedWord);
-    localReasonHistory.splice(0,0,reason);
+    let advanceState = false;
+    if (newGameData) {
+      const reason = newGameData?.game_board?.last_move_reasoning || "";
+      const lastWordIndex = newGameData?.game_board?.last_visited_tile["py/tuple"];;
+      const lastWord = lastWordIndex ? newGameData?.game_board?.tiles[lastWordIndex[0]][lastWordIndex[1]].word : "";
+      console.log("lastWord",lastWord);
+      for (let i = 0; i < gameData.words.length; i++) {
+        localWordHistory.splice(0,0,newGameData.words[i]);
+        if (i == gameData.words.length - 1 || newGameData.words[i] == lastWord) {
+          localReasonHistory.splice(0,0,reason);
+          break;
+        } else {
+          localReasonHistory.splice(0,0,"");
+        }
+      }
 
-    if (newGameData?.game_board.game_status != "ongoing") {
-      setGameEnded(true);
+      switch(newGameData?.game_board?.game_status) {
+         case "defeat": { }
+         case "victory": {
+            setGameEnded(true);
+            setInputLabel(`${newGameData?.game_board?.game_status}!! please submit`)
+            advanceState = true;
+            break;
+         }
+         case "ongoing": {
+            setInputLabel("New word")
+            advanceState = true;
+            break;
+        }
+        default: {
+          break;
+        }
+      }
     }
 
+    if (advanceState) {
+      setGameData(newGameData);
+      setWordHistory(localWordHistory);
+      setReasonHistory(localReasonHistory);
+    } else {
+      setInputLabel("Choose another word")
+    }
     setSelectedWord("");
-    setGameData(newGameData);
-    setWordHistory(localWordHistory);
-    setReasonHistory(localReasonHistory);
     setTransacting(false);
   }
 
@@ -78,9 +110,10 @@ export default function ChallengePage({ params }: { params: Promise<{ challenge_
     if (!address) return;
     try {
         const wordBytesList = new Array<`0x${string}`>();
-        wordHistory.reverse().forEach((word) => {
+        for (let i = 0; i < wordHistory.length; i++) {
+          const word = wordHistory[wordHistory.length - 1 - i];
           wordBytesList.push(toHex(word));
-        })
+        }
 
         const encodedPayload = encodeAbiParameters(
           parseAbiParameters('bytes32,bytes[]'),
@@ -168,7 +201,7 @@ export default function ChallengePage({ params }: { params: Promise<{ challenge_
                     className="peer w-full bg-transparent placeholder:text-slate-700 text-black text-sm border border-slate-400 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-500 shadow-sm focus:shadow"
                   />
                   <label className={!selectedWord ? "absolute cursor-text bg-slate-100 px-1 left-2.5 top-2.5 text-slate-700 text-sm transition-all transform origin-left peer-focus:-top-2 peer-focus:left-2.5 peer-focus:text-xs peer-focus:text-slate-400 peer-focus:scale-90" : "absolute cursor-text bg-slate-100 px-1 transition-all transform origin-left -top-2 left-2.5 text-xs text-slate-400 scale-90"}>
-                    { gameEnded ? `${gameData?.game_board?.game_status}!! please submit` : "New word."}
+                    {inputLabel}
                   </label>
                 </div>
               </div>

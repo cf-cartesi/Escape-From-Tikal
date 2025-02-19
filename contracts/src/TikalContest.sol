@@ -30,9 +30,9 @@ contract TikalContest is EvmCoprocessorAdapter {
         uint256 indexed treasures,
         uint256 timestamp,
         uint256 score,
-        bool escaped,
         uint256 moves,
         uint256 movesLeft,
+        bool victory,
         bytes32 payloadHash
     );
 
@@ -43,7 +43,7 @@ contract TikalContest is EvmCoprocessorAdapter {
         uint256 moves;
         uint256 movesLeft;
         address user;
-        bool escaped;
+        bool victory;
     }
     struct Challenge {
         uint256 start;
@@ -71,7 +71,7 @@ contract TikalContest is EvmCoprocessorAdapter {
             prizes[i].moves = challenges[challengeId].prizes[i].moves;
             prizes[i].movesLeft = challenges[challengeId].prizes[i].movesLeft;
             prizes[i].user = challenges[challengeId].prizes[i].user;
-            prizes[i].escaped = challenges[challengeId].prizes[i].escaped;
+            prizes[i].victory = challenges[challengeId].prizes[i].victory;
         }
         return prizes;
     }
@@ -135,13 +135,13 @@ contract TikalContest is EvmCoprocessorAdapter {
     // Notice class from backend
     // class ChallengeNotice(BaseModel):
     //     challenge_id: abi.Bytes32
-    //     user: abi.Address
     //     timestamp: abi.UInt256
     //     score: abi.UInt256
-    //     escaped: abi.Bool
-    //     n_treasures: abi.UInt256
     //     n_moves: abi.UInt256
     //     n_moves_left: abi.UInt256
+    //     user: abi.Address
+    //     n_treasures: abi.UInt8
+    //     victory: abi.Bool
 
     function handleNotice(
         bytes32 payloadHash,
@@ -155,7 +155,7 @@ contract TikalContest is EvmCoprocessorAdapter {
             uint256 movesLeft,
             address user,
             uint8 trasures,
-            bool escaped
+            bool victory
         ) = abi.decode(
                 notice,
                 (
@@ -171,13 +171,14 @@ contract TikalContest is EvmCoprocessorAdapter {
             );
         emit ReceivedNotice(chId, user, ts, payloadHash);
         if (ts >= challenges[chId].start && ts <= challenges[chId].end) {
-            if (score > 0 && score > challenges[chId].prizes[trasures].score) {
-                challenges[chId].prizes[trasures].timestamp = ts;
-                challenges[chId].prizes[trasures].score = score;
-                challenges[chId].prizes[trasures].moves = moves;
-                challenges[chId].prizes[trasures].movesLeft = movesLeft;
-                challenges[chId].prizes[trasures].user = user;
-                challenges[chId].prizes[trasures].escaped = escaped;
+            uint8 prizeIndex = victory ? trasures : 0;
+            if (score > 0 && score > challenges[chId].prizes[prizeIndex].score) {
+                challenges[chId].prizes[prizeIndex].timestamp = ts;
+                challenges[chId].prizes[prizeIndex].score = score;
+                challenges[chId].prizes[prizeIndex].moves = moves;
+                challenges[chId].prizes[prizeIndex].movesLeft = movesLeft;
+                challenges[chId].prizes[prizeIndex].user = user;
+                challenges[chId].prizes[prizeIndex].victory = victory;
             }
             emit ChallengeNotice(
                 chId,
@@ -185,9 +186,9 @@ contract TikalContest is EvmCoprocessorAdapter {
                 trasures,
                 ts,
                 score,
-                escaped,
                 moves,
                 movesLeft,
+                victory,
                 payloadHash
             );
         }

@@ -1738,3 +1738,151 @@ MAP_1 = {
         }
     }
 }
+
+MAP_0 = {
+    1: {
+        4: {
+            TYPE: EMPTY
+        },
+        5: {
+            TYPE: EMPTY
+        },
+        6: {
+            TYPE: EMPTY
+        },
+        7: {
+            TYPE: EMPTY
+        }
+    },
+    2: {
+        3: {
+            TYPE: EMPTY
+        },
+        4: {
+            TYPE: EMPTY
+        },
+        5: {
+            TYPE: EMPTY
+        },
+        6: {
+            TYPE: EMPTY
+        },
+        7: {
+            TYPE: EMPTY
+        }
+    },
+    3: {
+        2: {
+            TYPE: EMPTY
+        },
+        3: {
+            TYPE: EMPTY
+        },
+        4: {
+            TYPE: EMPTY
+        },
+        5: {
+            TYPE: EMPTY
+        },
+        6: {
+            TYPE: EMPTY
+        },
+        7: {
+            TYPE: EMPTY
+        }
+    },
+    4: {
+        1:{
+            TYPE: EMPTY
+        },
+        2: {
+            TYPE: EMPTY
+        },
+        3: {
+            TYPE: EMPTY
+        },
+        4: {
+            TYPE: EMPTY
+        },
+        5: {
+            TYPE: EMPTY
+        },
+        6: {
+            TYPE: EMPTY
+        },
+        7: {
+            TYPE: EMPTY
+        }
+    },
+    5: {
+        1:{
+            TYPE: EMPTY
+        },
+        2: {
+            TYPE: EMPTY
+        },
+        3: {
+            TYPE: EMPTY
+        },
+        4: {
+            TYPE: EMPTY
+        },
+        5: {
+            TYPE: EMPTY
+        },
+        6: {
+            TYPE: EMPTY
+        }
+    },
+    6: {
+        1:{
+            TYPE: EMPTY
+        },
+        2: {
+            TYPE: WATER
+        },
+        3: {
+            TYPE: EMPTY
+        },
+        4: {
+            TYPE: EMPTY
+        },
+        5: {
+            TYPE: EMPTY
+        }
+    },
+    7: {
+        1:{
+            TYPE: EMPTY
+        },
+        2: {
+            TYPE: EMPTY
+        },
+        3: {
+            TYPE: EMPTY
+        },
+        4: {
+            TYPE: EMPTY
+        }
+    }
+}
+
+EASY_N_INITIAL_OBJECTS = {
+    WORD: 3,
+    AMULET: 1,
+    TREASURE: 3,
+    CURSE: 3,
+    TRAP: 4,
+    WATER: 3,
+    EXIT: 1,
+}
+
+HARD_N_INITIAL_OBJECTS = {
+    WORD: 3,
+    AMULET: 1,
+    TREASURE: 4,
+    CURSE: 5,
+    TRAP: 6,
+    WATER: 4,
+    EXIT: 1,
+}

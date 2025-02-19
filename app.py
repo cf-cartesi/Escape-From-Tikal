@@ -1,19 +1,18 @@
-from logging import getLogger, basicConfig, DEBUG
+from logging import getLogger, basicConfig, INFO
 from pydantic import BaseModel
 from typing import Annotated, List
 import json
-import jsonpickle
 
 from cartesi import App, Rollup, RollupData, abi
 from cartesi.models import _str2hex as str2hex
 
-from game_engine.core_engine.const import EXIT
+from game_engine.core_engine.const import VICTORY
 from game_engine.core_engine import tikal_core as tkl_core
 from game_engine.core_engine.confs import STANDARD_LLAMA_PAYLOAD
 
 
 LOGGER = getLogger(__name__)
-basicConfig(level=DEBUG)
+basicConfig(level=INFO)
 app = App(raw_input = True)
 
 BytesList = Annotated[List[bytes], abi.ABIType('bytes[]')]
@@ -30,12 +29,9 @@ class ChallengeNotice(BaseModel):
     n_moves_left: abi.UInt256
     user: abi.Address
     n_treasures: abi.UInt8
-    escaped: abi.Bool
+    victory: abi.Bool
 
 LLAMA_DOMAIN = int.from_bytes(bytes.fromhex('2b'), "big") # llama domain
-DATA_MESSAGE = "The word is \"%s\" and the word sets are:\n%s"
-
-
 
 @app.advance()
 def handle_advance(rollup: Rollup, data: RollupData) -> bool:
@@ -46,14 +42,13 @@ def handle_advance(rollup: Rollup, data: RollupData) -> bool:
 
     selected_words = [w.decode('utf-8') for w in words_model.words]
 
-    LOGGER.info(f"Challenge id 0x{words_model.challenge_id.hex().rjust(64,'0')} and words selected {selected_words}")
+    LOGGER.info(f"Challenge id 0x{words_model.challenge_id.hex().rjust(64,'0')} and words selected {','.join(selected_words)}")
 
     def call_llama_server_gio(message):
         llama_message = STANDARD_LLAMA_PAYLOAD.copy()
         llama_message["messages"][1]["content"] = message
 
         LOGGER.info(message)
-        llama_message["messages"][1]["content"] = message
 
         res = rollup.gio(
             {
@@ -76,57 +71,32 @@ def handle_advance(rollup: Rollup, data: RollupData) -> bool:
         return ""
 
     int_game_id = int.from_bytes(words_model.challenge_id, "big")
-    new_game_state = tkl_core.GameState(game_id=int_game_id, new_game=True)
+    new_game_state = tkl_core.GameState(game_id=int_game_id, new_game=True, random_positions=True)
 
-    #Removing some indexes to make the response simpler
-    if new_game_state.game_board is not None:
-        del new_game_state.game_board.words_on_board
-        del new_game_state.game_board.word_tile_coords_set
-
-    serialized_output_state = jsonpickle.encode(new_game_state)
-
-    for selected_word in selected_words:
-        deserialized_state = jsonpickle.decode(serialized_output_state)
-        current_game_state = tkl_core.GameState(game_map=deserialized_state.game_map,
-            game_board=deserialized_state.game_board,
-            words=deserialized_state.words,
-            game_id=deserialized_state.game_id,
-            new_game=False)
-
-        #Create game executor and load map and board
-        game_executor = tkl_core.GameExecutor(current_game_state.game_board, current_game_state.game_map)
-
-        #Execute game
-        gameboard_output = game_executor.execute_game(current_game_state.words, handler=call_llama_server_gio)
-
-        #Remove indexes
-        if gameboard_output is not None:
-            del gameboard_output.words_on_board
-            del gameboard_output.word_tile_coords_set
-
-        current_game_state.game_board = gameboard_output
-        serialized_output_state = jsonpickle.encode(current_game_state)
-
-
-    deserialized_state = jsonpickle.decode(serialized_output_state)
-    final_game_state = tkl_core.GameState(game_map=deserialized_state.game_map,
-        game_board=deserialized_state.game_board,
-        words=deserialized_state.words,
-        game_id=deserialized_state.game_id,
+    current_game_state = tkl_core.GameState(game_map=new_game_state.game_map,
+        game_board=new_game_state.game_board,
+        words=selected_words,
+        game_id=new_game_state.game_id,
         new_game=False)
+
+    #Create game executor and load map and board
+    game_executor = tkl_core.GameExecutor(current_game_state.game_board, current_game_state.game_map)
+
+    #Execute game
+    gameboard_output = game_executor.execute_game(current_game_state.words, handler=call_llama_server_gio)
 
     if (data.metadata  is not None):
         notice: ChallengeNotice
-        if (final_game_state.game_board is not None):
+        if (gameboard_output is not None):
             notice = ChallengeNotice(
                 challenge_id = words_model.challenge_id,
                 timestamp = data.metadata.block_timestamp,
-                score = final_game_state.game_board.score,
-                n_moves = final_game_state.game_board.move_count,
-                n_moves_left = final_game_state.game_board.water_supply,
+                score = gameboard_output.score,
+                n_moves = gameboard_output.move_count,
+                n_moves_left = gameboard_output.water_supply,
                 user = data.metadata.msg_sender,
-                n_treasures = final_game_state.game_board.treasure_count,
-                escaped = final_game_state.game_board.last_visited_tile_type == EXIT,
+                n_treasures = gameboard_output.treasure_count,
+                victory = gameboard_output.game_status == VICTORY,
             )
         else:
             notice = ChallengeNotice(
@@ -137,11 +107,10 @@ def handle_advance(rollup: Rollup, data: RollupData) -> bool:
                 n_moves_left =0,
                 user = data.metadata.msg_sender,
                 n_treasures = 0,
-                escaped = False,
+                victory = False,
             )
         notice_hex = f"0x{abi.encode_model(notice).hex()}"
         LOGGER.debug(f"{notice=}")
-        LOGGER.debug(f"{notice_hex=}")
         rollup.notice(notice_hex)
     return True
 

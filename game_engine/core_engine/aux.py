@@ -1,5 +1,10 @@
-from .const import BEGINNING, DEFEAT, END, INDEX, MOCKED, REASONING, TYPE, VICTORY,WORD,TRAP_EMOJI, EXIT_EMOJI,CURSE_EMOJI,EMPTY_EMOJI,WATER_EMOJI,AMULET_EMOJI,NOTHING_EMOJI,TREASURE_EMOJI,EMPTY,TRAP,WATER,AMULET,TREASURE,EXIT,CURSE
+import re
+from logging import getLogger
+
+from .const import BEGINNING, DEFEAT, END, INDEX, REASONING, TYPE, VICTORY,WORD,TRAP_EMOJI, EXIT_EMOJI,CURSE_EMOJI,EMPTY_EMOJI,WATER_EMOJI,AMULET_EMOJI,NOTHING_EMOJI,TREASURE_EMOJI,EMPTY,TRAP,WATER,AMULET,TREASURE,EXIT,CURSE
 from .confs import INITIAL_WATER_SUPPLY, LLM_PROMPT_TEMPLATE_TEXT, MAP_BOUNDARIES
+
+LOGGER = getLogger(__name__)
 
 TYPE = TYPE
 WORD = WORD
@@ -153,7 +158,7 @@ def calculate_score(game_board):
     score = 3000
 
     if (game_board.game_status == VICTORY):
-        score += 1000
+        score += 2000
     score += 500 * game_board.treasure_count
 
     traps = INITIAL_WATER_SUPPLY - game_board.max_water_supply
@@ -170,7 +175,11 @@ def calculate_score(game_board):
 #Checks if the new provided word violates the previous words similarity rule
 def check_word_similarity(new_word, previous_words):
     #TODO: check if new word is too similar to previous words, thus violating the rules of the game
-    return False
+    return check_duplicate_word(new_word, previous_words)
+
+def check_duplicate_word(new_word, previous_words):
+    #Getting all valid tiles for next move
+    return new_word in previous_words
 
 #Returns the word group index closest to the given word
 def query_ai_for_closest_word_group(word, word_groups_tile_mapping, handler=None):
@@ -179,26 +188,30 @@ def query_ai_for_closest_word_group(word, word_groups_tile_mapping, handler=None
     #Creating a list with the word groups
     for key in word_groups_tile_mapping.keys():
         groups_list_str += f"\n{word_groups_tile_mapping[key][INDEX]} - {key}"
-    print(groups_list_str)
+    LOGGER.debug(groups_list_str)
 
     #Formatting prompt for the LLM
     llm_prompt = LLM_PROMPT_TEMPLATE_TEXT.format(given_word=word, word_sets=groups_list_str)
-    print(llm_prompt)
+    LOGGER.debug(llm_prompt)
 
     #Calling the LLM
     llm_response_str = query_llm(llm_prompt, handler)
 
     #Splitting the selection and the reasoning
-    chosen_group_index = llm_response_str.split(sep=".", maxsplit=1)[0]
-    reasoning = llm_response_str.split(sep=".", maxsplit=1)[1]
+    llm_response_match = re.match(r'[^\d]*(\d+)\.?([\s\S]*)',llm_response_str)
+    if llm_response_match is None or len(llm_response_match.group(1)) == 0:
+        raise RuntimeError(f"Couldn't extract index from LLM response\nPrompt:\n{llm_prompt}\nResponse:\n{llm_response_str}")
+
+    chosen_group_index = llm_response_match.group(1)
+    reasoning = llm_response_match.group(2).strip()
 
     try:
         #Convert to int
         chosen_group_index = int(chosen_group_index)
-    except Exception as e:
-        raise RuntimeError(f"Couldn't extract index from LLM response\nPrompt:\n{llm_prompt}\nResponse:\n{llm_response_str} {e=}")
+    except Exception:
+        raise RuntimeError(f"Couldn't extract index from LLM response\nPrompt:\n{llm_prompt}\nResponse:\n{llm_response_str}")
 
-    print(f"Chosen group was number {chosen_group_index}.\nReasoning:\n{reasoning}")
+    LOGGER.debug(f"Chosen group was number {chosen_group_index}.\nReasoning:\n{reasoning}")
     return {INDEX: chosen_group_index, REASONING: reasoning}
 
 def query_llm(llm_prompt, handler=None):
@@ -206,7 +219,7 @@ def query_llm(llm_prompt, handler=None):
     #The handler is initialized with the mocked one but might be changed to a new one
     if handler:
         llm_handler=handler
-    print(f"Using handler {llm_handler}")
+
     llm_response = llm_handler(llm_prompt)
 
     return llm_response
@@ -215,8 +228,8 @@ def mocked_llm(llm_prompt):
 
     word = llm_prompt.split("The word is ")[1].split(" and the word sets")[0]
     word_sets = llm_prompt.split("and the word sets are:")[1]
-    print(f"Mocked llm given word is {word}")
-    print(f"Provided word sets are:\n{word_sets}")
+    LOGGER.debug(f"Mocked llm given word is {word}")
+    LOGGER.debug(f"Provided word sets are:\n{word_sets}")
 
     index = 1
     if word in MOCKED_LLM_RESPONSE_DICT.keys():
