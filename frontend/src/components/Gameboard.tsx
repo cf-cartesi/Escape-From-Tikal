@@ -25,7 +25,8 @@ export default function Gameboard({boardData}:{boardData: GameData | undefined})
 
 
   return (
-    <div>
+    <div className='grid grid-cols-1 justify-items-center'>
+      {/* bg-[url(/mayan-background.jpeg)] */}
 
       <HexGrid width={layoutConfig.width} height={layoutConfig.height}>
         <Layout size={size} flat={layout.flat} spacing={layout.spacing} origin={layoutConfig.origin}>

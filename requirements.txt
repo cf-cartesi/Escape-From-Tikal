@@ -1,2 +1,1 @@
 python-cartesi @ git+https://github.com/prototyp3-dev/python-cartesi@d18e27993e7fc3d5c89931e8bc4f736e4f5c987c
-jsonpickle==4.0.1
